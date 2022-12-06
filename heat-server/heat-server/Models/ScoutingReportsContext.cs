@@ -17,6 +17,8 @@ namespace heat_server.Models
 
         public virtual DbSet<League> League { get; set; }
         public virtual DbSet<Player> Player { get; set; }
+        public virtual DbSet<Scout> Scout { get; set; }
+        public virtual DbSet<ScoutingReport> ScoutingReport { get; set; }
         public virtual DbSet<Team> Team { get; set; }
         public virtual DbSet<TeamPlayer> TeamPlayer { get; set; }
         public virtual DbSet<User> User { get; set; }
@@ -149,6 +151,40 @@ namespace heat_server.Models
                 entity.Property(e => e.WingSource)
                     .HasColumnName("Wing_Source")
                     .HasMaxLength(100);
+            });
+
+            modelBuilder.Entity<Scout>(entity =>
+            {
+                entity.HasKey(e => e.ScoutKey)
+                    .HasName("PK__Scout__C03A84D2E0C77665");
+
+                entity.Property(e => e.Email).HasMaxLength(50);
+
+                entity.Property(e => e.FirstName)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.LastName)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Phone).HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<ScoutingReport>(entity =>
+            {
+                entity.HasKey(e => e.ReportKey)
+                    .HasName("PK__Scouting__0261CF2CDC262BEC");
+
+                entity.Property(e => e.Comments).HasMaxLength(500);
+
+                entity.Property(e => e.CreatedDateTime)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.ModifiedDateTime)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
             });
 
             modelBuilder.Entity<Team>(entity =>
