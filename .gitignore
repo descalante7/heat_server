@@ -7,6 +7,9 @@
 *.rsuser
 *.suo
 *.user
+heat-server/heat-server/bin 
+heat-server/heat-server/obj 
+packages
 *.userosscache
 *.sln.docstates
 
