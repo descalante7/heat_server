@@ -20,15 +20,60 @@ namespace heat_server.Controllers
             _context = context;
         }
 
-        // GET: api/ScoutingReports
+        // GET: api/ScoutingReports/Scouts
         [HttpGet]
+        [Route("/api/ScoutingReports/Scouts")]
         public async Task<ActionResult<IEnumerable<Scout>>> GetScout()
         {
-            return await _context.Scout.ToListAsync();
+            var activeScouts = await _context.Scout.Where(s => s.IsActiveFlag == true).ToListAsync();
+            return activeScouts;
         }
 
-        // GET: api/ScoutingReports/5
-        [HttpGet("{id}")]
+        // GET: api/ScoutingReports/Leagues
+        [HttpGet]
+        [Route("/api/ScoutingReports/Leagues")]
+        public async Task<ActionResult<IEnumerable<League>>> GetLeagues()
+        {
+            var activeLeagues = await _context.League.Where(l => l.SearchDisplayFlag == true).ToListAsync();
+            return activeLeagues;
+        }
+
+        // GET: api/ScoutingReports/Teams
+        [HttpGet]
+        [Route("/api/ScoutingReports/Teams")]
+        public async Task<ActionResult<IEnumerable<Team>>> GetTeams(int leagueKey)
+        {
+            var activeTeams = await _context.Team.Where(t => t.LeagueKey == leagueKey).ToListAsync();
+            return activeTeams;
+        }
+
+        // GET: api/ScoutingReports/Players?seasonKey=___
+        [HttpGet]
+        [Route("/api/ScoutingReports/Players")]
+        public async Task<ActionResult<IEnumerable<Player>>> GetPlayers(int seasonKey)
+        {
+            var players = await (
+                from TP in _context.TeamPlayer
+                join P in _context.Player on TP.PlayerKey equals P.PlayerKey
+                where (TP.SeasonKey == seasonKey)
+                select new Player
+                {
+                    PlayerKey = P.PlayerKey,
+                    FirstName = P.FirstName,
+                    LastName = P.LastName,
+                    BirthDate = P.BirthDate,
+                    PositionKey = P.PositionKey,
+                    Height = P.Height,
+                    Weight = P.Weight,
+                    Wing = P.Wing
+                }).ToListAsync();
+
+            return players;
+        }
+
+        // GET: api/ScoutingReports/Scouts?id=___
+        [HttpGet]
+        [Route("/api/ScoutingReports/Scout")]
         public async Task<ActionResult<Scout>> GetScout(int id)
         {
             var scout = await _context.Scout.FindAsync(id);
@@ -41,10 +86,11 @@ namespace heat_server.Controllers
             return scout;
         }
 
-        // PUT: api/ScoutingReports/5
+        // PUT: api/ScoutingReports/updatescout?id=___
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
+        [HttpPut]
+        [Route("/api/ScoutingReports/UpdateScout")]
         public async Task<IActionResult> PutScout(int id, Scout scout)
         {
             if (id != scout.ScoutKey)
@@ -73,10 +119,11 @@ namespace heat_server.Controllers
             return NoContent();
         }
 
-        // POST: api/ScoutingReports
+        // POST: api/ScoutingReports/CreateScout
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
+        [Route("/api/ScoutingReports/CreateScout")]
         public async Task<ActionResult<Scout>> PostScout(Scout scout)
         {
             _context.Scout.Add(scout);
