@@ -162,11 +162,17 @@ namespace heat_server.Controllers
              if (reportId != report.ReportKey)
             {
                 return BadRequest();
-            }
+            }           
 
-            report.ModifiedDateTime = DateTime.Now;
-            
-            _context.Entry(report).State = EntityState.Modified;
+            var reportToUpdate = _context.ScoutingReport.Find(reportId);
+            reportToUpdate.TeamKey = report.TeamKey;
+            reportToUpdate.ModifiedDateTime = DateTime.Now;
+            reportToUpdate.Comments = report.Comments;
+            reportToUpdate.Assist = report.Assist;            
+            reportToUpdate.Defense = report.Defense;
+            reportToUpdate.Rebound = report.Rebound;
+            reportToUpdate.Shooting = report.Shooting;
+            _context.Entry(reportToUpdate).State = EntityState.Modified;
 
             try
             {
