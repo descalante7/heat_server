@@ -221,20 +221,22 @@ namespace heat_server.Controllers
             return CreatedAtAction("GetReport", report);
         }
 
-        // DELETE: api/ScoutingReports/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<Scout>> DeleteScout(int id)
+        // DELETE: api/ScoutingReports/report?reportId=___
+        [HttpDelete]
+        [Route("/api/ScoutingReports/DeleteReport")]
+        public async Task<ActionResult<ScoutingReport>> DeleteReport(int reportId)
         {
-            var scout = await _context.Scout.FindAsync(id);
-            if (scout == null)
+            var report = _context.ScoutingReport.Find(reportId);
+            if (report == null)
             {
                 return NotFound();
             }
 
-            _context.Scout.Remove(scout);
+            report.IsDeleted = true;
+            _context.Entry(report).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return scout;
+            return NoContent();
         }
 
         private bool ScoutExists(int id)

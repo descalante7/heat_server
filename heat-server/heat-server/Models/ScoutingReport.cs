@@ -16,5 +16,6 @@ namespace heat_server.Models
         public string Comments { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public DateTime? ModifiedDateTime { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
