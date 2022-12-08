@@ -29,13 +29,54 @@ namespace heat_server.Controllers
             return activeScouts;
         }
 
-        // GET: api/ScoutingReports/Report?id=___
+        // GET: api/ScoutingReports/Report?reportId=___
         [HttpGet]
         [Route("/api/ScoutingReports/Report")]
-        public async Task<ActionResult<IEnumerable<ScoutingReport>>> GetReport(int reportKey)
+        public async Task<ActionResult<ScoutingReport>> GetReport(int reportId)
         {
-            var scoutingReport = await _context.ScoutingReport.Where(r => r.ReportKey == reportKey).ToListAsync();
+            var scoutingReport = await _context.ScoutingReport.Where(r => r.ReportKey == reportId).SingleOrDefaultAsync();
             return scoutingReport;
+        }
+
+        // GET: api/ScoutingReports/Reports?id=___
+        [HttpGet]
+        [Route("/api/ScoutingReports/Reports")]
+        public async Task<ActionResult<IEnumerable<ScoutingReportsResponse>>> GetReports(int scoutId)
+        {
+            var teams = await (
+                from T in _context.Team
+                join SR in _context.ScoutingReport on T.TeamKey equals SR.TeamKey
+                where (SR.ScoutKey == scoutId)               
+                select new
+                {
+                    TeamId = SR.TeamKey,
+                    TeamNickName = T.TeamNickname,
+                    Conference = T.Conference
+                } into x
+                group x by new { x.TeamId, x.TeamNickName, x.Conference } into y
+                select new
+                {
+                    TeamId = y.Key.TeamId,
+                    TeamNickName = y.Key.TeamNickName,
+                    Conference = y.Key.Conference
+                }).ToListAsync();
+
+            ScoutingReportsResponse[] reportRes = new ScoutingReportsResponse[] { };
+            foreach(var t in teams)
+            {
+                ScoutingReportsResponse team = new ScoutingReportsResponse();
+                team.TeamKey = t.TeamId;
+                team.TeamNickName = t.TeamNickName;
+                team.Conference = t.Conference;
+
+                //Query players here
+
+                //Query reports here
+
+                //Add to reportRes
+            }
+            
+            return reportRes;
         }
 
         // GET: api/ScoutingReports/Leagues
