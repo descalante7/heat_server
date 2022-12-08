@@ -29,6 +29,15 @@ namespace heat_server.Controllers
             return activeScouts;
         }
 
+        // GET: api/ScoutingReports/Report?id=___
+        [HttpGet]
+        [Route("/api/ScoutingReports/Report")]
+        public async Task<ActionResult<IEnumerable<ScoutingReport>>> GetReport(int reportKey)
+        {
+            var scoutingReport = await _context.ScoutingReport.Where(r => r.ReportKey == reportKey).ToListAsync();
+            return scoutingReport;
+        }
+
         // GET: api/ScoutingReports/Leagues
         [HttpGet]
         [Route("/api/ScoutingReports/Leagues")]
@@ -56,6 +65,30 @@ namespace heat_server.Controllers
                 from TP in _context.TeamPlayer
                 join P in _context.Player on TP.PlayerKey equals P.PlayerKey
                 where (TP.SeasonKey == seasonKey)
+                select new Player
+                {
+                    PlayerKey = P.PlayerKey,
+                    FirstName = P.FirstName,
+                    LastName = P.LastName,
+                    BirthDate = P.BirthDate,
+                    PositionKey = P.PositionKey,
+                    Height = P.Height,
+                    Weight = P.Weight,
+                    Wing = P.Wing
+                }).ToListAsync();
+
+            return players;
+        }
+
+        // GET: api/ScoutingReports/PlayersByTeam?seasonKey=___&teamKey=___
+        [HttpGet]
+        [Route("/api/ScoutingReports/PlayersByTeam")]
+        public async Task<ActionResult<IEnumerable<Player>>> GetTeamPlayers(int seasonKey, int teamKey)
+        {
+            var players = await (
+                from TP in _context.TeamPlayer
+                join P in _context.Player on TP.PlayerKey equals P.PlayerKey
+                where (TP.SeasonKey == seasonKey && TP.TeamKey == teamKey)
                 select new Player
                 {
                     PlayerKey = P.PlayerKey,
@@ -119,6 +152,41 @@ namespace heat_server.Controllers
             return NoContent();
         }
 
+        // PUT: api/ScoutingReports/updatereport?id=___
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for
+        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+        [HttpPut]
+        [Route("/api/ScoutingReports/UpdateReport")]
+        public async Task<IActionResult> PutReport(int reportId, ScoutingReport report)
+        {
+             if (reportId != report.ReportKey)
+            {
+                return BadRequest();
+            }
+
+            report.ModifiedDateTime = DateTime.Now;
+            
+            _context.Entry(report).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ReportExists(reportId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
         // POST: api/ScoutingReports/CreateScout
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
@@ -131,6 +199,20 @@ namespace heat_server.Controllers
 
             //return CreatedAtAction("GetScout", new { id = scout.ScoutKey }, scout);
             return CreatedAtAction("GetScout", scout);
+        }
+
+        // POST: api/ScoutingReports/CreateReport
+        // To protect from overposting attacks, enable the specific properties you want to bind to, for
+        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+        [HttpPost]
+        [Route("/api/ScoutingReports/CreateReport")]
+        public async Task<ActionResult<ScoutingReport>> PostReport(ScoutingReport report)
+        {
+            report.ModifiedDateTime = DateTime.Now;
+            _context.ScoutingReport.Add(report);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetReport", report);
         }
 
         // DELETE: api/ScoutingReports/5
@@ -152,6 +234,11 @@ namespace heat_server.Controllers
         private bool ScoutExists(int id)
         {
             return _context.Scout.Any(e => e.ScoutKey == id);
+        }
+
+        private bool ReportExists(int id)
+        {
+            return _context.ScoutingReport.Any(e => e.ReportKey == id);
         }
     }
 }
