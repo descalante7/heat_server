@@ -60,23 +60,67 @@ namespace heat_server.Controllers
                     TeamNickName = y.Key.TeamNickName,
                     Conference = y.Key.Conference
                 }).ToListAsync();
-
-            ScoutingReportsResponse[] reportRes = new ScoutingReportsResponse[] { };
+            
+            ScoutingReportsResponse[] res = new ScoutingReportsResponse[teams.Count]; 
+            
+            int i = 0;
             foreach(var t in teams)
             {
                 ScoutingReportsResponse team = new ScoutingReportsResponse();
                 team.TeamKey = t.TeamId;
                 team.TeamNickName = t.TeamNickName;
-                team.Conference = t.Conference;
-
+                team.Conference = t.Conference;   
+                
                 //Query players here
+                var players = await (
+                    from P in _context.Player
+                    join SR in _context.ScoutingReport on P.PlayerKey equals SR.PlayerKey
+                    where ( SR.ScoutKey == scoutId && SR.TeamKey == t.TeamId)
+                    select new
+                    {
+                        PlayerKey = SR.PlayerKey,
+                        PlayerName = P.FirstName + P.LastName,
+                        BirthDate = P.BirthDate
+                    }).Distinct().ToListAsync();
 
-                //Query reports here
+                Console.WriteLine(players);
+                PlayerData[] playersData = new PlayerData[players.Count];
 
-                //Add to reportRes
+                int j = 0;
+                foreach(var p in players)
+                {
+                    ReportData[] reportData = new ReportData[] { };
+                    PlayerData pData = new PlayerData();
+                    pData.PlayerKey = p.PlayerKey;
+                    pData.PlayerName = p.PlayerName;
+                    pData.BirthDate = p.BirthDate;
+
+                    //Query reports here
+                    var reports = await (
+                        from SR in _context.ScoutingReport
+                        where (SR.ScoutKey == scoutId && SR.PlayerKey == p.PlayerKey)
+                        select new ReportData
+                        {
+                            ScoutKey = SR.ScoutKey,
+                            CreatedDateTime = SR.CreatedDateTime,
+                            Assist = SR.Assist,
+                            Defense = SR.Defense,
+                            Rebound = SR.Rebound,
+                            Shooting = SR.Shooting,
+                            Comments = SR.Comments
+                        }).ToListAsync();
+
+                    reportData = reports.ToArray();
+                    pData.Reports = reportData;
+                    playersData[j] = pData;
+                    j++;
+                }
+                team.PlayerData = playersData;
+                res[i] = team;
+                i++;
             }
             
-            return reportRes;
+            return res;
         }
 
         // GET: api/ScoutingReports/Leagues

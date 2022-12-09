@@ -13,10 +13,10 @@ namespace heat_server.Models
 
     public partial class PlayerData
     {
-        public string PlayerKey { get; set; }
+        public int PlayerKey { get; set; }
         public string PlayerName { get; set; }
-        public string BirthDate { get; set; }
-        public ReportData[] Report {get; set;} 
+        public DateTime? BirthDate { get; set; }
+        public ReportData[] Reports {get; set;}
 
     }
 
@@ -25,9 +25,9 @@ namespace heat_server.Models
         public int ScoutKey { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public string Comments { get; set; }
-        public int Assist { get; set; }
-        public int Defense { get; set; }
-        public int Rebound { get; set; }
-        public int Shooting { get; set; }
+        public int? Assist { get; set; }
+        public int? Defense { get; set; }
+        public int? Rebound { get; set; }
+        public int? Shooting { get; set; }
     }
 }
