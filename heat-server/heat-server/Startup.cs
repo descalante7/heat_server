@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,8 +29,19 @@ namespace heat_server
         public void ConfigureServices(IServiceCollection services)
         {
             var connection = Configuration.GetConnectionString("ScoutingReportsDatabase");
+            services.AddCors();
             services.AddDbContext<ScoutingReportsContext>(options => options.UseSqlServer(connection));
             services.AddControllers();
+            services.AddSwaggerGen();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "ScoutingReport API",
+                    Description = "A description of the scouting report API",
+                });
+            });            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,12 +56,24 @@ namespace heat_server
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseCors(builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            });
+
+            //app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Showing API V1");
+            });           
         }
     }
 }

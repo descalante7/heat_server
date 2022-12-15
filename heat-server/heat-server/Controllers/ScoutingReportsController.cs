@@ -38,6 +38,33 @@ namespace heat_server.Controllers
             return scoutingReport;
         }
 
+        // GET: api/ScoutingReports/ReportsAll?scoutId=___
+        [HttpGet]
+        [Route("/api/ScoutingReports/ReportsAll")]
+        public async Task<ActionResult<IEnumerable<dynamic>>> GetAllReport(int scoutId)
+        {
+            var scoutingReports = await (
+                from SR in _context.ScoutingReport
+                join P in _context.Player on SR.PlayerKey equals P.PlayerKey
+                where (SR.ScoutKey == scoutId)
+                select new
+                {
+                    ReportKey = SR.ReportKey,
+                    ScoutKey = SR.ScoutKey,
+                    PlayerKey = SR.PlayerKey,
+                    PlayerName = P.FirstName + ' ' + P.LastName,
+                    TeamKey = SR.TeamKey,
+                    Assist = SR.Assist,
+                    Defense = SR.Defense,
+                    Rebound = SR.Rebound,
+                    Shooting = SR.Shooting,
+                    Comments = SR.Comments,
+                    LastModified = SR.ModifiedDateTime
+                }).ToListAsync();
+            
+            return scoutingReports;
+        }
+
         // GET: api/ScoutingReports/Reports?id=___
         [HttpGet]
         [Route("/api/ScoutingReports/Reports")]
