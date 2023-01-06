@@ -52,10 +52,6 @@ namespace heat_server
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
-
             app.UseCors(builder =>
             {
                 builder.AllowAnyOrigin()
@@ -63,6 +59,10 @@ namespace heat_server
                        .AllowAnyHeader();
             });
 
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
+            
             //app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
